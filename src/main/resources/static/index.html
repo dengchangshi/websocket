@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+        <head>
+            <meta charset="utf-8" />
+            <title>WebSocket测试Demo-张三</title>
+        </head>
+
+        <body>
+            <!--userno:发送消息人的编号-->
+            发送人：<input type="text" id="userno" value="张三" readonly="readonly"><br><br>
+            接收人：<input type="text" id="usernoto" value="李四"><br><br>
+            <button onclick="closeWebSocket()">关闭WebSocket连接</button>
+            <hr/>
+            <!--<input type="text" id="name" /><button onclick="send()">发送消息</button>-->
+            <input type="text" id="name" value="老李，最近忙啥呢！"/><button onclick="send2()">发送消息</button>
+            <hr/>
+                <div id="message"></div>
+        </body>
+        <script>
+            var websocket = null;
+            var userno=document.getElementById('userno').value;
+            //判断浏览器是否支持websocket
+            if('WebSocket' in window) {
+                //实现化WebSocket对象
+                //websocket = new WebSocket("ws://localhost:8080/websocket");
+                //alert(userno);
+                websocket = new WebSocket("ws://localhost:8080/websocket/"+userno);
+            } else {
+                alert('该浏览器不支持websocket')
+            }
+
+            //打开事件
+            websocket.onopen = function(event) {
+                console.log('建立连接');
+                setMessageInnerHTML("WebSocket连接成功");
+            }
+            //关闭事件
+            websocket.onclose = function(event) {
+                console.log("连接关闭");
+                setMessageInnerHTML("WebSocket连接关闭");
+            }
+            //获得消息事件
+            websocket.onmessage = function(event) {
+                console.log("收到消息：" + event.data);
+                setMessageInnerHTML(event.data);
+            }
+
+            //发生了错误事件
+            websocket.onerror = function(event) {
+                console.log("websocket 通信发生错误");
+                setMessageInnerHTML("websocket 通信发生错误");
+            }
+
+            //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
+            window.onbeforeunload = function(event) {
+                closeWebSocket();
+            }
+
+            //发送消息
+            function send() {
+                var message = document.getElementById('name').value;
+                websocket.send(message);
+            }
+            //发送消息
+            function send2() {
+                var message = document.getElementById('name').value;//要发送的消息内容
+                var now=getNowFormatDate();//获取当前时间
+                var ToSendUserno=document.getElementById('usernoto').value; //接收人编号
+                var SendUserno=document.getElementById('userno').value; //发送人编号
+                message=message+"|"+ToSendUserno//将要发送的信息和内容拼起来，以便于服务端知道消息要发给谁
+                websocket.send(message);
+                document.getElementById('message').innerHTML += (now+"  发送人:  " + SendUserno+'<br/>'+"---"+message) + '<br/>';
+                document.getElementById('message').style.color="red";
+            }
+            //将消息显示在网页上
+            function setMessageInnerHTML(sendMessage) {
+                document.getElementById('message').innerHTML += sendMessage + '<br/>';
+            }
+
+            //关闭WebSocket连接
+            function closeWebSocket() {
+                websocket.close();
+            }
+
+            //获取当前时间
+            function getNowFormatDate() {
+                var date = new Date();
+                var seperator1 = "-";
+                var seperator2 = ":";
+                var month = date.getMonth() + 1;
+                var strDate = date.getDate();
+                if (month >= 1 && month <= 9) {
+                    month = "0" + month;
+                }
+                if (strDate >= 0 && strDate <= 9) {
+                    strDate = "0" + strDate;
+                }
+                var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate
+                    + " " + date.getHours() + seperator2 + date.getMinutes()
+                    + seperator2 + date.getSeconds();
+                return currentdate;
+            }
+
+        </script>
+
+</html>
