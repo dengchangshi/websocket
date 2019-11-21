@@ -77,13 +77,15 @@ public class WebSocketTest {
         System.out.println("来自客户端的消息:" + message);
         //        session.get
         String sendUserno = message.split("[|]")[1];
-        //为空则群发消息
+        //为空不发消息
         if(webSocketSet.get(sendUserno) == null) {
-            sendAll(message);
+            System.out.println("当前用户不在线");
+            //sendAll(message);
         } else {
             //给指定的人发消息
             sendToUser(message);
         }
+
     }
 
 
